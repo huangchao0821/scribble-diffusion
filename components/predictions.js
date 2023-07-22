@@ -1,6 +1,5 @@
 import copy from "copy-to-clipboard";
 import { Copy as CopyIcon, PlusCircle as PlusCircleIcon } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useEffect, useRef, useState } from "react";
 import Loader from "components/loader";
@@ -31,7 +30,7 @@ export default function Predictions({ predictions, submissionCount }) {
         .slice()
         .reverse()
         .map((prediction, index) => (
-          <Fragment key={prediction.id}>
+          <Fragment key={index}>
             {index === 0 &&
               submissionCount == Object.keys(predictions).length && (
                 <div ref={scrollRef} />
@@ -45,6 +44,8 @@ export default function Predictions({ predictions, submissionCount }) {
 
 export function Prediction({ prediction, showLinkToNewScribble = false }) {
   const [linkCopied, setLinkCopied] = useState(false);
+
+  console.log("==>",prediction);
 
   const copyLink = () => {
     const url =
@@ -69,17 +70,17 @@ export function Prediction({ prediction, showLinkToNewScribble = false }) {
   return (
     <div className="mt-6 mb-12">
       <div className="shadow-lg border my-5 p-5 bg-white flex">
-        <div className="w-1/2 aspect-square relative border">
+        {/* <div className="w-1/2 aspect-square relative border">
           <img
-            src={prediction.input.image}
+            src={prediction}
             alt="input scribble"
             className="w-full aspect-square"
           />
-        </div>
+        </div> */}
         <div className="w-1/2 aspect-square relative">
-          {prediction.output?.length ? (
+          {prediction.images[0] ? (
             <img
-              src={prediction.output[prediction.output.length - 1]}
+              src={prediction.images[0]}
               alt="output image"
               className="w-full aspect-square"
             />
@@ -90,9 +91,9 @@ export function Prediction({ prediction, showLinkToNewScribble = false }) {
           )}
         </div>
       </div>
-      <div className="text-center px-4 opacity-60 text-xl">
+      {/* <div className="text-center px-4 opacity-60 text-xl">
         &ldquo;{prediction.input.prompt}&rdquo;
-      </div>
+      </div> */}
       <div className="text-center py-2">
         <button className="lil-button" onClick={copyLink}>
           <CopyIcon className="icon" />

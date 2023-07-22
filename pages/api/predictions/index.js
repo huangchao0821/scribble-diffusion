@@ -14,6 +14,23 @@ async function getObjectFromRequestBodyStream(body) {
   return JSON.parse(string);
 }
 
+const getBase64Image = async (src) => {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.src = src;
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(image, 0, 0, image.width, image.height);
+      const dataURL = canvas.toDataURL("image/png");
+      console.log('---getBase64Image', dataURL);
+      resolve(dataURL);
+    };
+  });
+};
+
 const WEBHOOK_HOST = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : process.env.NGROK_HOST;
@@ -29,25 +46,20 @@ export default async function handler(req) {
 
   // https://replicate.com/rossjillian/controlnet
 
+const model = "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478";
+
+
   const replicate = new Replicate({
     auth: process.env.REPLICATE_API_TOKEN,
   });
 
-  const prediction = await replicate.deployments.predictions.create(
-    "replicate",
-    "scribble-diffusion-jagilley-controlnet",
-    {
-      input,
-      webhook: `${WEBHOOK_HOST}/api/replicate-webhook`,
-      webhook_events_filter: ["start", "completed"],
-    }
-  );
 
-  if (prediction?.error) {
-    return NextResponse.json({ detail: prediction.error }, { status: 500 });
-  }
+const output = await replicate.run(model, { input });
 
-  return NextResponse.json(prediction, { status: 201 });
+
+  return NextResponse.json({
+    images: output
+  }, { status: 200 });
 }
 
 export const config = {
